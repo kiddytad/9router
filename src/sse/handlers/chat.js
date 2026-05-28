@@ -49,6 +49,17 @@ export async function handleChat(request, clientRawRequest = null) {
   const url = new URL(request.url);
   const modelStr = body.model;
 
+  // Hook evaluator sends claude/<model> — remap to 9router's hosted models
+  const HOOK_MODEL_REWRITES = {
+    'claude/claude-sonnet-4-6': 'bpm/deepseek-v4-flash',
+    'claude-sonnet-4-6':        'bpm/deepseek-v4-flash',
+    'claude/claude-opus-4-6':   'bpm/deepseek-v4-pro',
+    'claude/claude-haiku-4-5-20251001': 'bpm/deepseek-v4-flash',
+  };
+  if (HOOK_MODEL_REWRITES[body.model]) {
+    body.model = HOOK_MODEL_REWRITES[body.model];
+  }
+
   // Count messages (support both messages[] and input[] formats)
   const msgCount = body.messages?.length || body.input?.length || 0;
   const toolCount = body.tools?.length || 0;
